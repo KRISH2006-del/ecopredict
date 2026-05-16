@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | EcoPredict{% endblock %}
+
+{% block content %}
+<div id="dashboard" class="dashboard-container">
+    <h1>Analytics Dashboard</h1>
+    <p class="subtitle">Insights from prediction data</p>
+
+    <!-- Stat Cards -->
+    <div class="stats-grid">
+        <div class="stat-card" id="total-predictions">
+            <div class="stat-icon-box">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">0</div>
+                <div class="stat-label">Total Predictions</div>
+            </div>
+        </div>
+        <div class="stat-card" id="avg-prediction">
+            <div class="stat-icon-box">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20V10"></path>
+                    <path d="M18 20V4"></path>
+                    <path d="M6 20v-4"></path>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">0</div>
+                <div class="stat-label">Avg. Prediction (kg)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Grid -->
+    <div class="charts-grid">
+        <div class="chart-card">
+            <canvas id="areaChart"></canvas>
+        </div>
+        <div class="chart-card">
+            <canvas id="distributionChart"></canvas>
+        </div>
+    </div>
+
+    <div class="chart-card full-width">
+        <canvas id="timelineChart"></canvas>
+    </div>
+</div>
+{% endblock %}

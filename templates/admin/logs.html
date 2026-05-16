@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Activity Logs | Admin{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="admin-header">
+        <h1>Activity Logs</h1>
+        <div class="admin-nav">
+            <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-secondary">Overview</a>
+            <a href="{{ url_for('admin.manage_users') }}" class="btn btn-secondary">Users</a>
+            <a href="{{ url_for('admin.manage_data') }}" class="btn btn-secondary">Data</a>
+            <a href="{{ url_for('admin.view_logs') }}" class="btn btn-primary">Logs</a>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>User</th>
+                    <th>Area</th>
+                    <th>Type</th>
+                    <th>Prediction</th>
+                    <th>Date</th>
+                    <th>Created</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>{{ log['id'] }}</td>
+                    <td>{{ log['username'] or 'Anonymous' }}</td>
+                    <td>{{ log['area'] }}</td>
+                    <td>{{ log['waste_type'] }}</td>
+                    <td class="prediction-value">{{ "%.2f"|format(log['predicted_weight_kg']) }} kg</td>
+                    <td>{{ log['prediction_date'] }}</td>
+                    <td class="timestamp">{{ log['timestamp'] }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="empty-text">No logs found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

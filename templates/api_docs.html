@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}API Documentation | EcoPredict{% endblock %}
+
+{% block content %}
+<div class="dashboard-container api-docs-container">
+    <h1>API Documentation</h1>
+    <p class="subtitle">RESTful API endpoints for waste prediction integration</p>
+
+    <div class="api-intro">
+        <div class="api-info-card">
+            <h3>Base URL</h3>
+            <code>http://127.0.0.1:5000</code>
+        </div>
+        <div class="api-info-card">
+            <h3>Content Type</h3>
+            <code>application/json</code>
+        </div>
+    </div>
+
+    {% for category_key, category in endpoints.items() %}
+    <div class="api-section">
+        <h2>{{ category.title }}</h2>
+
+        {% for endpoint in category.endpoints %}
+        <div class="api-endpoint">
+            <div class="endpoint-header">
+                <span class="method method-{{ endpoint.method.lower() }}">{{ endpoint.method }}</span>
+                <code class="endpoint-path">{{ endpoint.path }}</code>
+            </div>
+            <p class="endpoint-description">{{ endpoint.description }}</p>
+
+            {% if endpoint.parameters %}
+            <div class="endpoint-params">
+                <h4>Parameters</h4>
+                <table class="params-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Required</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for param in endpoint.parameters %}
+                        <tr>
+                            <td><code>{{ param.name }}</code></td>
+                            <td>{{ param.type }}</td>
+                            <td>{{ 'Yes' if param.required else 'No' }}</td>
+                            <td>{{ param.description }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+            <div class="endpoint-response">
+                <h4>Response Example</h4>
+                <pre><code>{{ endpoint.response | tojson(indent=2) if endpoint.response is mapping else endpoint.response }}</code></pre>
+            </div>
+
+            <div class="try-it">
+                <button class="btn btn-secondary try-btn" data-path="{{ endpoint.path }}"
+                    data-method="{{ endpoint.method }}">
+                    Try It
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    document.querySelectorAll('.try-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const path = e.target.dataset.path;
+            const method = e.target.dataset.method;
+
+            if (method === 'GET') {
+                try {
+                    const response = await fetch(path);
+                    const data = await response.json();
+                    alert('Response:\n' + JSON.stringify(data, null, 2).substring(0, 500) + '...');
+                } catch (err) {
+                    alert('Error: ' + err.message);
+                }
+            } else {
+                alert('This endpoint requires POST data. Use the main form to test predictions.');
+            }
+        });
+    });
+</script>
+{% endblock %}

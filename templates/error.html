@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Error {{ code }} | EcoPredict{% endblock %}
+
+{% block content %}
+<div class="container error-container">
+    <div class="error-code">{{ code }}</div>
+    <h1>{{ error }}</h1>
+    <p class="subtitle">Something went wrong. Please try again.</p>
+
+    <div class="error-actions">
+        <a href="/" class="btn btn-primary">Go Home</a>
+        <a href="javascript:history.back()" class="btn btn-secondary">Go Back</a>
+    </div>
+</div>
+{% endblock %}

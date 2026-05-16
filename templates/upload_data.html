@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}My Data | EcoPredict{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="page-header">
+        <div>
+            <h1>My Uploaded Data</h1>
+            <p class="subtitle">View and manage your imported data</p>
+        </div>
+        <div class="header-actions">
+            <a href="{{ url_for('upload.upload_page') }}" class="btn btn-primary">Upload More</a>
+        </div>
+    </div>
+
+    <div class="data-stats" id="dataStats">
+        <div class="stat-card">
+            <div class="stat-value" id="totalRecords">-</div>
+            <div class="stat-label">Total Records</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="totalUploads">-</div>
+            <div class="stat-label">Total Uploads</div>
+        </div>
+    </div>
+
+    {% if data %}
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Area</th>
+                    <th>Waste Type</th>
+                    <th>Date</th>
+                    <th>Weight (kg)</th>
+                    <th>Source File</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in data %}
+                <tr>
+                    <td>{{ row[0] }}</td>
+                    <td>{{ row[1] }}</td>
+                    <td>{{ row[2] }}</td>
+                    <td>{{ row[3] }}</td>
+                    <td class="prediction-value">{{ "%.2f"|format(row[4]) }}</td>
+                    <td class="timestamp">{{ row[5] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="1.5">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+        </svg>
+        <h3>No data yet</h3>
+        <p>Upload your first dataset to get started</p>
+        <a href="{{ url_for('upload.upload_page') }}" class="btn btn-primary">Upload Data</a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    // Fetch and display stats
+    fetch('/upload/api/stats')
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('totalRecords').textContent = data.total_records;
+            document.getElementById('totalUploads').textContent = data.total_uploads;
+        });
+</script>
+{% endblock %}

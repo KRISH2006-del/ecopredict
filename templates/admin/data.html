@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Data Management | Admin{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="admin-header">
+        <h1>Data Management</h1>
+        <div class="admin-nav">
+            <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-secondary">Overview</a>
+            <a href="{{ url_for('admin.manage_users') }}" class="btn btn-secondary">Users</a>
+            <a href="{{ url_for('admin.manage_data') }}" class="btn btn-primary">Data</a>
+            <a href="{{ url_for('admin.view_logs') }}" class="btn btn-secondary">Logs</a>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-value">{{ stats.training_count }}</div>
+                <div class="stat-label">Training Records</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-value">{{ stats.prediction_count }}</div>
+                <div class="stat-label">Predictions</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-value">{{ stats.areas | length }}</div>
+                <div class="stat-label">Areas</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-value">{{ stats.waste_types | length }}</div>
+                <div class="stat-label">Waste Types</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="admin-grid">
+        <div class="admin-card">
+            <h3>Areas</h3>
+            <ul class="data-list">
+                {% for area in stats.areas %}
+                <li>{{ area }}</li>
+                {% else %}
+                <li class="empty-text">No areas found</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="admin-card">
+            <h3>Waste Types</h3>
+            <ul class="data-list">
+                {% for wtype in stats.waste_types %}
+                <li>{{ wtype }}</li>
+                {% else %}
+                <li class="empty-text">No waste types found</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="admin-actions">
+        <h3>Data Actions</h3>
+        <div class="action-buttons">
+            <a href="{{ url_for('admin.import_data') }}" class="btn btn-primary">Import CSV Data</a>
+            <a href="{{ url_for('admin.backup_database') }}" class="btn btn-secondary">Backup Database</a>
+            <form action="{{ url_for('admin.clear_predictions') }}" method="POST" style="display: inline;"
+                onsubmit="return confirm('Clear all prediction logs?');">
+                <button type="submit" class="btn btn-danger">Clear Predictions</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

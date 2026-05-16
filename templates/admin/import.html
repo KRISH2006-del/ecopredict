@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Import Data | Admin{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Import Data</h1>
+    <p class="subtitle">Upload a CSV file to import training data</p>
+
+    <div class="import-info">
+        <h3>CSV Format Requirements</h3>
+        <p>The CSV file must contain the following columns:</p>
+        <ul>
+            <li><code>area</code> - The municipality area name</li>
+            <li><code>waste_type</code> - Type of waste (e.g., Recyclable, Organic)</li>
+            <li><code>ticket_date</code> - Date in YYYY-MM-DD format</li>
+            <li><code>net_weight_kg</code> - Weight in kilograms</li>
+        </ul>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" class="import-form">
+        <div class="file-upload">
+            <input type="file" name="file" id="file" accept=".csv" required>
+            <label for="file">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="1">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                <span>Choose CSV file or drag here</span>
+            </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Upload and Import</button>
+    </form>
+
+    <div class="back-link">
+        <a href="{{ url_for('admin.manage_data') }}" class="link-primary">Back to Data Management</a>
+    </div>
+</div>
+{% endblock %}

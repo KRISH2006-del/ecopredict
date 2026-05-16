@@ -1,0 +1,65 @@
+{
+  "random_forest": {
+    "name": "Random Forest",
+    "description": "Ensemble of decision trees, robust and accurate",
+    "color": "#27ae60",
+    "mae": 4737.85,
+    "rmse": 9224.56,
+    "r2": 0.9764,
+    "path": "models\\random_forest_model.joblib"
+  },
+  "gradient_boosting": {
+    "name": "Gradient Boosting",
+    "description": "Sequential ensemble with high accuracy",
+    "color": "#3498db",
+    "mae": 18688.02,
+    "rmse": 30330.94,
+    "r2": 0.7451,
+    "path": "models\\gradient_boosting_model.joblib"
+  },
+  "linear_regression": {
+    "name": "Linear Regression",
+    "description": "Simple and interpretable baseline model",
+    "color": "#9b59b6",
+    "mae": 36409.81,
+    "rmse": 45372.06,
+    "r2": 0.4297,
+    "path": "models\\linear_regression_model.joblib"
+  },
+  "ridge": {
+    "name": "Ridge Regression",
+    "description": "Linear model with L2 regularization",
+    "color": "#e74c3c",
+    "mae": 36409.51,
+    "rmse": 45370.77,
+    "r2": 0.4297,
+    "path": "models\\ridge_model.joblib"
+  },
+  "decision_tree": {
+    "name": "Decision Tree",
+    "description": "Single tree, fast and interpretable",
+    "color": "#f39c12",
+    "mae": 11358.32,
+    "rmse": 21676.23,
+    "r2": 0.8698,
+    "path": "models\\decision_tree_model.joblib"
+  },
+  "knn": {
+    "name": "K-Nearest Neighbors",
+    "description": "Instance-based learning",
+    "color": "#1abc9c",
+    "mae": 24204.36,
+    "rmse": 35633.23,
+    "r2": 0.6482,
+    "path": "models\\knn_model.joblib"
+  },
+  "adaboost": {
+    "name": "AdaBoost",
+    "description": "Adaptive boosting ensemble",
+    "color": "#e67e22",
+    "mae": 32938.64,
+    "rmse": 42393.11,
+    "r2": 0.5021,
+    "path": "models\\adaboost_model.joblib"
+  }
+}

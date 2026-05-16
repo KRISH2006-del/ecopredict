@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Register | EcoPredict{% endblock %}
+
+{% block content %}
+<div class="container auth-container">
+    <h1>Create Account</h1>
+    <p class="subtitle">Join EcoPredict today</p>
+
+    <form method="POST" class="auth-form" id="registerForm">
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required placeholder="Choose a username" minlength="3">
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required placeholder="Enter your email">
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required placeholder="Create a password" minlength="6">
+        </div>
+
+        <div class="form-group">
+            <label for="confirm_password">Confirm Password</label>
+            <input type="password" id="confirm_password" name="confirm_password" required
+                placeholder="Confirm your password">
+        </div>
+
+        <button type="submit">Create Account</button>
+    </form>
+
+    <div class="auth-footer">
+        <p>Already have an account? <a href="{{ url_for('auth.login') }}" class="link-primary">Sign In</a></p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container predict-container">
+    <h1>Waste Prediction</h1>
+    <p class="subtitle">Smart Waste Generation Forecasting System</p>
+
+    <form id="predictForm">
+        <div class="form-group">
+            <label for="area">Municipality Area</label>
+            <select id="area" name="area" required>
+                <option value="" disabled selected>Select an area...</option>
+                {% for area in areas %}
+                <option value="{{ area }}">{{ area }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="waste_type">Waste Type</label>
+            <select id="waste_type" name="waste_type" required>
+                <option value="" disabled selected>Select waste type...</option>
+                {% for type in waste_types %}
+                <option value="{{ type }}">{{ type }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="date">Forecast Date</label>
+            <input type="date" id="date" name="date" required>
+        </div>
+
+        <button type="submit">Generate Prediction</button>
+    </form>
+
+    <div id="result"></div>
+
+    <!-- Visualization Section (hidden until prediction) -->
+    <div id="visualization-section" class="visualization-section hidden">
+        <h2>Prediction Analysis</h2>
+
+        <!-- Gauge Display -->
+        <div class="gauge-container">
+            <div class="gauge-wrapper">
+                <canvas id="gaugeChart"></canvas>
+                <div class="gauge-value" id="gaugeValue">0 kg</div>
+            </div>
+        </div>
+
+        <!-- Comparison Chart -->
+        <div class="comparison-chart-container">
+            <canvas id="comparisonChart"></canvas>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="prediction-stats">
+            <div class="prediction-stat-item">
+                <span class="stat-label">Your Prediction</span>
+                <span class="stat-value highlight" id="pred-value">-</span>
+            </div>
+            <div class="prediction-stat-item">
+                <span class="stat-label">Area Average</span>
+                <span class="stat-value" id="area-avg">-</span>
+            </div>
+            <div class="prediction-stat-item">
+                <span class="stat-label">Overall Average</span>
+                <span class="stat-value" id="overall-avg">-</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container history-container">
+    <div class="page-header">
+        <div>
+            <h1>Prediction History</h1>
+            <p class="subtitle">Recent waste generation forecasts</p>
+        </div>
+        <div class="export-buttons">
+            <a href="{{ url_for('exports.export_csv') }}" class="btn btn-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Export CSV
+            </a>
+            <a href="{{ url_for('exports.export_pdf') }}" class="btn btn-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                </svg>
+                Export PDF
+            </a>
+            <a href="{{ url_for('exports.export_json') }}" class="btn btn-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <polyline points="16 18 22 12 16 6"></polyline>
+                    <polyline points="8 6 2 12 8 18"></polyline>
+                </svg>
+                Export JSON
+            </a>
+        </div>
+    </div>
+
+    {% if history %}
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Area</th>
+                    <th>Waste Type</th>
+                    <th>Prediction</th>
+                    <th>Timestamp</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in history %}
+                <tr>
+                    <td>{{ row['prediction_date'] }}</td>
+                    <td>{{ row['area'] }}</td>
+                    <td>{{ row['waste_type'] }}</td>
+                    <td class="prediction-value">{{ "%.2f"|format(row['predicted_weight_kg']) }} kg</td>
+                    <td class="timestamp">{{ row['timestamp'] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="1">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+        </svg>
+        <h3>No predictions yet</h3>
+        <p>Start making predictions to see your history here.</p>
+        <a href="/" class="btn btn-primary">Make Prediction</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

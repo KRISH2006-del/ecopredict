@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Data | EcoPredict{% endblock %}
+
+{% block content %}
+<div class="container upload-container">
+    <h1>Upload Your Data</h1>
+    <p class="subtitle">Import your own waste collection data for analysis</p>
+
+    <div class="upload-section">
+        <div class="format-info">
+            <h3>Supported Formats</h3>
+            <div class="format-cards">
+                <div class="format-card">
+                    <div class="format-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                        </svg>
+                    </div>
+                    <h4>CSV</h4>
+                    <p>Comma-separated values</p>
+                </div>
+                <div class="format-card">
+                    <div class="format-icon excel">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="8" y1="13" x2="16" y2="13"></line>
+                            <line x1="8" y1="17" x2="16" y2="17"></line>
+                        </svg>
+                    </div>
+                    <h4>Excel</h4>
+                    <p>.xlsx or .xls files</p>
+                </div>
+                <div class="format-card">
+                    <div class="format-icon json">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <path d="M12 12L8 16l4 4"></path>
+                        </svg>
+                    </div>
+                    <h4>JSON</h4>
+                    <p>JavaScript Object Notation</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="column-info">
+            <h3>Required Columns</h3>
+            <p>Your file should contain these columns (flexible naming):</p>
+            <ul>
+                <li><strong>Area:</strong> area, municipality, location, region</li>
+                <li><strong>Type:</strong> waste_type, type, category</li>
+                <li><strong>Date:</strong> date, ticket_date, collection_date</li>
+                <li><strong>Weight:</strong> weight, net_weight_kg, kg, amount</li>
+            </ul>
+        </div>
+
+        <form action="{{ url_for('upload.process_upload') }}" method="POST" enctype="multipart/form-data"
+            class="upload-form">
+            <div class="file-upload-zone" id="dropZone">
+                <input type="file" name="file" id="fileInput" accept=".csv,.xlsx,.xls,.json" required>
+                <label for="fileInput">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="1.5">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    <span class="upload-text">Drop your file here or click to browse</span>
+                    <span class="upload-hint">CSV, Excel, or JSON (max 10MB)</span>
+                </label>
+            </div>
+
+            <div id="selectedFile" class="selected-file hidden">
+                <span class="file-name"></span>
+                <button type="button" class="remove-file" onclick="clearFile()">&times;</button>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-upload">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                Upload and Process
+            </button>
+        </form>
+    </div>
+
+    {% if uploads %}
+    <div class="uploads-history">
+        <div class="section-header">
+            <h3>Your Uploads</h3>
+            <a href="{{ url_for('upload.view_data') }}" class="btn btn-secondary">View All Data</a>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Filename</th>
+                        <th>Format</th>
+                        <th>Records</th>
+                        <th>Status</th>
+                        <th>Uploaded</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for upload in uploads %}
+                    <tr>
+                        <td>{{ upload[1] }}</td>
+                        <td><span class="badge format-badge">{{ upload[2] }}</span></td>
+                        <td>{{ upload[3] }}</td>
+                        <td>
+                            <span class="status-badge status-{{ upload[4] }}">{{ upload[4] }}</span>
+                        </td>
+                        <td class="timestamp">{{ upload[5] }}</td>
+                        <td>
+                            <form action="{{ url_for('upload.delete_upload', upload_id=upload[0]) }}" method="POST"
+                                style="display: inline;"
+                                onsubmit="return confirm('Delete this upload and all its data?');">
+                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const selectedFile = document.getElementById('selectedFile');
+
+    // Drag and drop
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(event => {
+        dropZone.addEventListener(event, e => {
+            e.preventDefault();
+            e.stopPropagation();
+        });
+    });
+
+    ['dragenter', 'dragover'].forEach(event => {
+        dropZone.addEventListener(event, () => dropZone.classList.add('drag-over'));
+    });
+
+    ['dragleave', 'drop'].forEach(event => {
+        dropZone.addEventListener(event, () => dropZone.classList.remove('drag-over'));
+    });
+
+    dropZone.addEventListener('drop', e => {
+        const dt = e.dataTransfer;
+        fileInput.files = dt.files;
+        showSelectedFile(dt.files[0]);
+    });
+
+    fileInput.addEventListener('change', e => {
+        if (e.target.files.length > 0) {
+            showSelectedFile(e.target.files[0]);
+        }
+    });
+
+    function showSelectedFile(file) {
+        selectedFile.classList.remove('hidden');
+        selectedFile.querySelector('.file-name').textContent = file.name;
+        dropZone.classList.add('has-file');
+    }
+
+    function clearFile() {
+        fileInput.value = '';
+        selectedFile.classList.add('hidden');
+        dropZone.classList.remove('has-file');
+    }
+</script>
+{% endblock %}

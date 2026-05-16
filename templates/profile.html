@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Profile | EcoPredict{% endblock %}
+
+{% block content %}
+<div class="container profile-container">
+    <h1>Your Profile</h1>
+    <p class="subtitle">Account information and statistics</p>
+
+    <div class="profile-card">
+        <div class="profile-avatar">
+            {{ user.username[0].upper() }}
+        </div>
+        <div class="profile-info">
+            <h2>{{ user.username }}</h2>
+            <p class="profile-email">{{ user.email }}</p>
+            {% if user.is_admin %}
+            <span class="badge admin-badge">Admin</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon-box">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">{{ stats.total_predictions }}</div>
+                <div class="stat-label">Your Predictions</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon-box">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path d="M12 20V10"></path>
+                    <path d="M18 20V4"></path>
+                    <path d="M6 20v-4"></path>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">{{ stats.avg_prediction }} kg</div>
+                <div class="stat-label">Average Prediction</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="profile-actions">
+        <a href="{{ url_for('history') }}" class="btn btn-primary">View History</a>
+        <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary">Logout</a>
+    </div>
+</div>
+{% endblock %}

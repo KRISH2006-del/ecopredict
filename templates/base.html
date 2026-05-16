@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="{{ theme }}">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}EcoPredict | Waste Management{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+
+<body class="{{ theme }}-theme">
+    <nav class="navbar">
+        <a href="/" class="logo">EcoPredict</a>
+        <div class="nav-links">
+            <a href="/" class="{{ 'active' if request.path == '/' else '' }}">Predict</a>
+            <a href="/dashboard" class="{{ 'active' if request.path == '/dashboard' else '' }}">Dashboard</a>
+            <a href="/analytics" class="{{ 'active' if request.path == '/analytics' else '' }}">Analytics</a>
+            <a href="/compare" class="{{ 'active' if request.path == '/compare' else '' }}">Compare</a>
+            <a href="/history" class="{{ 'active' if request.path == '/history' else '' }}">History</a>
+            <a href="/upload" class="{{ 'active' if '/upload' in request.path else '' }}">Upload</a>
+            <a href="/models" class="{{ 'active' if request.path == '/models' else '' }}">Models</a>
+
+            {% if current_user %}
+            {% if current_user.is_admin %}
+            <a href="/admin" class="{{ 'active' if '/admin' in request.path else '' }}">Admin</a>
+            {% endif %}
+            <div class="nav-dropdown">
+                <a href="{{ url_for('auth.profile') }}" class="nav-user">
+                    <span class="user-avatar">{{ current_user.username[0].upper() }}</span>
+                    {{ current_user.username }}
+                </a>
+                <div class="dropdown-menu">
+                    <a href="{{ url_for('auth.profile') }}">Profile</a>
+                    <a href="{{ url_for('settings.settings_page') }}">Settings</a>
+                    <hr>
+                    <a href="{{ url_for('auth.logout') }}">Logout</a>
+                </div>
+            </div>
+            {% else %}
+            <a href="{{ url_for('auth.login') }}" class="btn-nav">Login</a>
+            {% endif %}
+
+            <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+                <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                </svg>
+                <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-container">
+        {% for category, message in messages %}
+        <div class="flash-message flash-{{ category }}">
+            {{ message }}
+            <button class="flash-close" onclick="this.parentElement.remove()">&times;</button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <div class="main-wrapper">
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer>
+    </footer>
+
+    <script>
+        function toggleTheme() {
+            const body = document.body;
+            const currentTheme = body.classList.contains('light-theme') ? 'light' : 'dark';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+            body.classList.remove(currentTheme + '-theme');
+            body.classList.add(newTheme + '-theme');
+            document.documentElement.setAttribute('data-theme', newTheme);
+
+            // Save preference
+            fetch('/settings/api/theme', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ theme: newTheme })
+            });
+        }
+    </script>
+    <script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+
+</html>

@@ -1,0 +1,286 @@
+{% extends "base.html" %}
+
+{% block title %}Model Selection | EcoPredict{% endblock %}
+
+{% block content %}
+<div class="dashboard-container models-container">
+    <h1>Prediction Models</h1>
+    <p class="subtitle">Choose and compare different prediction algorithms</p>
+
+    <!-- Current Model -->
+    <div class="current-model-card">
+        <div class="model-indicator">
+            <span class="active-dot"></span>
+            Active Model
+        </div>
+        <h2 id="currentModelName">{{ current_model.name }}</h2>
+        <p>{{ current_model.description }}</p>
+        <div class="model-metrics">
+            <div class="metric">
+                <span class="metric-value">{{ current_model.mae }}</span>
+                <span class="metric-label">MAE</span>
+            </div>
+            <div class="metric">
+                <span class="metric-value">{{ "%.2f"|format(current_model.r2 * 100) }}%</span>
+                <span class="metric-label">R2 Score</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Model Selection -->
+    <div class="model-grid">
+        {% for model in models %}
+        <div class="model-card {{ 'active' if model.is_current }}" data-model-id="{{ model.id }}"
+            style="--model-color: {{ model.color }}">
+            <div class="model-color-bar" style="background-color: var(--model-color)"></div>
+            <h3>{{ model.name }}</h3>
+            <p class="model-description">{{ model.description }}</p>
+            <div class="model-stats">
+                <div class="stat">
+                    <span class="stat-label">MAE</span>
+                    <span class="stat-value">{{ model.mae }}</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">RMSE</span>
+                    <span class="stat-value">{{ model.rmse }}</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">R2</span>
+                    <span class="stat-value">{{ "%.2f"|format(model.r2 * 100) }}%</span>
+                </div>
+            </div>
+            <button class="btn btn-select-model {{ 'btn-primary' if model.is_current else 'btn-secondary' }}"
+                onclick="selectModel('{{ model.id }}', this)" {{ 'disabled' if model.is_current }}>
+                {{ 'Selected' if model.is_current else 'Select' }}
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Model Comparison Chart -->
+    <div class="chart-section">
+        <h3>Model Comparison</h3>
+        <div class="charts-row">
+            <div class="chart-card">
+                <h4>Mean Absolute Error (Lower is Better)</h4>
+                <canvas id="maeChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h4>R2 Score (Higher is Better)</h4>
+                <canvas id="r2Chart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Multi-Model Prediction -->
+    <div class="multi-predict-section">
+        <h3>Compare All Models</h3>
+        <p>Make a prediction using all models at once</p>
+
+        <form id="multiPredictForm" class="multi-predict-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="area">Area</label>
+                    <select name="area" id="area" required>
+                        {% for area in areas %}
+                        <option value="{{ area }}">{{ area }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="waste_type">Waste Type</label>
+                    <select name="waste_type" id="waste_type" required>
+                        {% for wtype in waste_types %}
+                        <option value="{{ wtype }}">{{ wtype }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="date">Date</label>
+                    <input type="date" name="date" id="date" required>
+                </div>
+                <button type="submit" class="btn btn-primary" id="btn-compare-all">Compare All</button>
+            </div>
+        </form>
+
+        <div id="multiPredictResults" class="multi-results hidden"></div>
+    </div>
+</div>
+
+<script id="comparison-data" type="application/json">
+    {{ comparison | tojson | safe }}
+</script>
+
+<script>
+    // Set today's date as default
+    document.querySelector('input[type="date"]').valueAsDate = new Date();
+
+    // Model comparison data
+    const comparison = JSON.parse(document.getElementById('comparison-data').textContent);
+
+    // Render MAE chart
+    new Chart(document.getElementById('maeChart'), {
+        type: 'bar',
+        data: {
+            labels: comparison.labels,
+            datasets: [{
+                label: 'MAE',
+                data: comparison.mae,
+                backgroundColor: comparison.colors.map(c => c + '80'),
+                borderColor: comparison.colors,
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: 'rgba(255,255,255,0.7)' } },
+                x: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.7)' } }
+            }
+        }
+    });
+
+    // Render R2 chart
+    new Chart(document.getElementById('r2Chart'), {
+        type: 'bar',
+        data: {
+            labels: comparison.labels,
+            datasets: [{
+                label: 'R2 Score',
+                data: comparison.r2.map(v => v * 100),
+                backgroundColor: comparison.colors.map(c => c + '80'),
+                borderColor: comparison.colors,
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, max: 100, grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: 'rgba(255,255,255,0.7)', callback: v => v + '%' } },
+                x: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.7)' } }
+            }
+        }
+    });
+
+    // Select model
+    async function selectModel(modelId, btn) {
+        if (btn) {
+            btn.dataset.originalText = btn.innerText;
+            btn.innerText = 'Selecting...';
+            btn.disabled = true;
+            btn.classList.add('pulse');
+        }
+
+        try {
+            const response = await fetch('/models/select', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ model_id: modelId })
+            });
+
+            if (response.ok) {
+                location.reload();
+            } else {
+                throw new Error('Failed to select model');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            if (btn) {
+                btn.innerText = 'Error';
+                btn.classList.remove('pulse');
+                setTimeout(() => {
+                    btn.innerText = btn.dataset.originalText || 'Select';
+                    btn.disabled = false;
+                }, 2000);
+            }
+            alert('Failed to select model. Please try again.');
+        }
+    }
+
+    // Multi-model prediction
+    document.getElementById('multiPredictForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const form = e.target;
+        const btn = form.querySelector('button[type="submit"]');
+        const originalText = btn.innerText;
+
+        btn.innerText = 'Comparing...';
+        btn.disabled = true;
+        btn.classList.add('pulse');
+
+        const resultsDiv = document.getElementById('multiPredictResults');
+        resultsDiv.classList.add('hidden');
+
+        try {
+            const formData = new FormData(form);
+            const response = await fetch('/models/predict-all', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+            displayMultiResults(data);
+        } catch (error) {
+            console.error('Error:', error);
+            resultsDiv.innerHTML = `<div class="error-message">An error occurred during comparison.</div>`;
+            resultsDiv.classList.remove('hidden');
+        } finally {
+            btn.innerText = originalText;
+            btn.disabled = false;
+            btn.classList.remove('pulse');
+        }
+    });
+
+    function displayMultiResults(data) {
+        const resultsDiv = document.getElementById('multiPredictResults');
+        resultsDiv.classList.remove('hidden');
+
+        if (data.error) {
+            resultsDiv.innerHTML = `<div class="error-message">${data.error}</div>`;
+            return;
+        }
+
+        let html = '<div class="results-grid">';
+
+        // Sort by prediction value
+        const sorted = Object.entries(data.predictions).sort((a, b) => b[1].prediction - a[1].prediction);
+
+        for (const [modelId, result] of sorted) {
+            html += `
+            <div class="result-card" style="border-color: ${result.color}">
+                <div class="result-model">${result.name}</div>
+                <div class="result-value" style="color: ${result.color}">${result.prediction} kg</div>
+            </div>
+        `;
+        }
+
+        html += '</div>';
+
+        // Add average and range
+        const values = sorted.map(([_, r]) => r.prediction);
+        const avg = values.reduce((a, b) => a + b, 0) / values.length;
+        const min = Math.min(...values);
+        const max = Math.max(...values);
+
+        html += `
+        <div class="results-summary">
+            <div class="summary-item">
+                <span class="label">Average</span>
+                <span class="value">${avg.toFixed(2)} kg</span>
+            </div>
+            <div class="summary-item">
+                <span class="label">Range</span>
+                <span class="value">${min.toFixed(2)} - ${max.toFixed(2)} kg</span>
+            </div>
+        </div>
+    `;
+
+        resultsDiv.innerHTML = html;
+    }
+</script>
+{% endblock %}

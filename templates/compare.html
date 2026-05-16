@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+
+{% block title %}Compare Periods | EcoPredict{% endblock %}
+
+{% block content %}
+<div class="dashboard-container compare-container">
+    <h1>Period Comparison</h1>
+    <p class="subtitle">Compare predictions across different time periods</p>
+
+    <!-- Quick Comparison -->
+    <div class="quick-compare">
+        <h3>Quick Compare</h3>
+        <div class="quick-buttons">
+            <button class="btn btn-secondary" onclick="quickCompare('week')">Last 7 Days vs Previous</button>
+            <button class="btn btn-secondary" onclick="quickCompare('month')">Last 30 Days vs Previous</button>
+            <button class="btn btn-secondary" onclick="quickCompare('year')">Last Year vs Previous</button>
+        </div>
+        <div id="quickResult" class="quick-result hidden"></div>
+    </div>
+
+    <!-- Custom Comparison -->
+    <div class="custom-compare">
+        <h3>Custom Comparison</h3>
+        <form id="compareForm" class="compare-form">
+            <div class="compare-periods">
+                <div class="period-group">
+                    <h4>Period 1</h4>
+                    <div class="form-group">
+                        <label>Start Date</label>
+                        <input type="date" name="period1_start" required>
+                    </div>
+                    <div class="form-group">
+                        <label>End Date</label>
+                        <input type="date" name="period1_end" required>
+                    </div>
+                </div>
+                <div class="vs-divider">VS</div>
+                <div class="period-group">
+                    <h4>Period 2</h4>
+                    <div class="form-group">
+                        <label>Start Date</label>
+                        <input type="date" name="period2_start" required>
+                    </div>
+                    <div class="form-group">
+                        <label>End Date</label>
+                        <input type="date" name="period2_end" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <div class="form-group">
+                    <label>Area (Optional)</label>
+                    <select name="area">
+                        <option value="">All Areas</option>
+                        {% for area in areas %}
+                        <option value="{{ area }}">{{ area }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Waste Type (Optional)</label>
+                    <select name="waste_type">
+                        <option value="">All Types</option>
+                        {% for wtype in waste_types %}
+                        <option value="{{ wtype }}">{{ wtype }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Compare</button>
+        </form>
+    </div>
+
+    <!-- Results -->
+    <div id="comparisonResults" class="comparison-results hidden">
+        <h3>Comparison Results</h3>
+
+        <div class="compare-summary">
+            <div class="period-summary" id="period1Summary">
+                <h4>Period 1</h4>
+                <div class="summary-stats"></div>
+            </div>
+            <div class="change-indicators" id="changeIndicators"></div>
+            <div class="period-summary" id="period2Summary">
+                <h4>Period 2</h4>
+                <div class="summary-stats"></div>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <canvas id="comparisonChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+    let comparisonChart = null;
+
+    async function quickCompare(period) {
+        const response = await fetch(`/compare/api/quick?period=${period}`);
+        const data = await response.json();
+
+        const resultDiv = document.getElementById('quickResult');
+        resultDiv.classList.remove('hidden');
+
+        const changeClass = val => val >= 0 ? 'positive' : 'negative';
+        const arrow = val => val >= 0 ? '&#x25B2;' : '&#x25BC;';
+
+        resultDiv.innerHTML = `
+        <div class="quick-stats">
+            <div class="stat-box">
+                <div class="stat-label">Predictions</div>
+                <div class="stat-value">${data.current.count}</div>
+                <div class="stat-change ${changeClass(data.change.count)}">
+                    ${arrow(data.change.count)} ${Math.abs(data.change.count)}%
+                </div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Avg Weight</div>
+                <div class="stat-value">${data.current.avg} kg</div>
+                <div class="stat-change ${changeClass(data.change.avg)}">
+                    ${arrow(data.change.avg)} ${Math.abs(data.change.avg)}%
+                </div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Total Weight</div>
+                <div class="stat-value">${data.current.total} kg</div>
+                <div class="stat-change ${changeClass(data.change.total)}">
+                    ${arrow(data.change.total)} ${Math.abs(data.change.total)}%
+                </div>
+            </div>
+        </div>
+    `;
+    }
+
+    document.getElementById('compareForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(e.target);
+        const params = new URLSearchParams(formData);
+
+        const response = await fetch(`/compare/api/data?${params}`);
+        const data = await response.json();
+
+        displayResults(data);
+    });
+
+    function displayResults(data) {
+        const resultsDiv = document.getElementById('comparisonResults');
+        resultsDiv.classList.remove('hidden');
+
+        // Period 1 summary
+        const p1 = data.period1.summary;
+        document.querySelector('#period1Summary .summary-stats').innerHTML = `
+        <div>Count: ${p1.count || 0}</div>
+        <div>Average: ${p1.avg || 0} kg</div>
+        <div>Total: ${p1.total || 0} kg</div>
+    `;
+
+        // Period 2 summary
+        const p2 = data.period2.summary;
+        document.querySelector('#period2Summary .summary-stats').innerHTML = `
+        <div>Count: ${p2.count || 0}</div>
+        <div>Average: ${p2.avg || 0} kg</div>
+        <div>Total: ${p2.total || 0} kg</div>
+    `;
+
+        // Change indicators
+        const c = data.comparison;
+        const changeClass = val => val >= 0 ? 'positive' : 'negative';
+        document.getElementById('changeIndicators').innerHTML = `
+        <div class="change-item ${changeClass(c.avg_change || 0)}">
+            Avg: ${c.avg_change || 0}%
+        </div>
+        <div class="change-item ${changeClass(c.total_change || 0)}">
+            Total: ${c.total_change || 0}%
+        </div>
+    `;
+
+        // Chart
+        renderComparisonChart(data);
+    }
+
+    function renderComparisonChart(data) {
+        const ctx = document.getElementById('comparisonChart');
+
+        if (comparisonChart) comparisonChart.destroy();
+
+        const p1Data = data.period1.predictions.map(p => p.weight);
+        const p2Data = data.period2.predictions.map(p => p.weight);
+        const p1Labels = data.period1.predictions.map(p => p.date);
+        const p2Labels = data.period2.predictions.map(p => p.date);
+
+        comparisonChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: p1Labels.length > p2Labels.length ? p1Labels : p2Labels,
+                datasets: [
+                    {
+                        label: 'Period 1',
+                        data: p1Data,
+                        borderColor: 'rgba(39, 174, 96, 1)',
+                        backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Period 2',
+                        data: p2Data,
+                        borderColor: 'rgba(52, 152, 219, 1)',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: { color: 'rgba(255,255,255,0.7)' }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(255,255,255,0.1)' },
+                        ticks: { color: 'rgba(255,255,255,0.7)' }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255,255,255,0.1)' },
+                        ticks: { color: 'rgba(255,255,255,0.7)' }
+                    }
+                }
+            }
+        });
+    }
+</script>
+{% endblock %}

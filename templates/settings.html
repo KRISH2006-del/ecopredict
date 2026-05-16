@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Settings | EcoPredict{% endblock %}
+
+{% block content %}
+<div class="container settings-container">
+    <h1>Settings</h1>
+    <p class="subtitle">Customize your experience</p>
+
+    <div class="settings-sections">
+        <!-- Preferences Section -->
+        <section class="settings-section">
+            <h2>Preferences</h2>
+            <form action="{{ url_for('settings.update_settings') }}" method="POST">
+                <div class="form-group">
+                    <label for="theme">Theme</label>
+                    <select name="theme" id="theme">
+                        <option value="dark" {{ 'selected' if settings.theme=='dark' }}>Dark</option>
+                        <option value="light" {{ 'selected' if settings.theme=='light' }}>Light</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="default_area">Default Area</label>
+                    <select name="default_area" id="default_area">
+                        <option value="">-- Select --</option>
+                        {% for area in areas %}
+                        <option value="{{ area }}" {{ 'selected' if settings.default_area==area }}>{{ area }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="default_waste_type">Default Waste Type</label>
+                    <select name="default_waste_type" id="default_waste_type">
+                        <option value="">-- Select --</option>
+                        {% for wtype in waste_types %}
+                        <option value="{{ wtype }}" {{ 'selected' if settings.default_waste_type==wtype }}>{{ wtype }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group checkbox-group">
+                    <label>
+                        <input type="checkbox" name="notifications" {{ 'checked' if settings.notifications_enabled }}>
+                        Enable notifications
+                    </label>
+                </div>
+
+                <div class="form-group checkbox-group">
+                    <label>
+                        <input type="checkbox" name="email_reports" {{ 'checked' if settings.email_reports }}>
+                        Receive email reports
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label for="report_frequency">Report Frequency</label>
+                    <select name="report_frequency" id="report_frequency">
+                        <option value="daily" {{ 'selected' if settings.report_frequency=='daily' }}>Daily</option>
+                        <option value="weekly" {{ 'selected' if settings.report_frequency=='weekly' }}>Weekly</option>
+                        <option value="monthly" {{ 'selected' if settings.report_frequency=='monthly' }}>Monthly
+                        </option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Save Preferences</button>
+            </form>
+        </section>
+
+        <!-- Password Section -->
+        <section class="settings-section">
+            <h2>Change Password</h2>
+            <form action="{{ url_for('settings.change_password') }}" method="POST">
+                <div class="form-group">
+                    <label for="current_password">Current Password</label>
+                    <input type="password" name="current_password" id="current_password" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="new_password">New Password</label>
+                    <input type="password" name="new_password" id="new_password" required minlength="6">
+                </div>
+
+                <div class="form-group">
+                    <label for="confirm_password">Confirm New Password</label>
+                    <input type="password" name="confirm_password" id="confirm_password" required>
+                </div>
+
+                <button type="submit" class="btn btn-secondary">Change Password</button>
+            </form>
+        </section>
+
+        <!-- Danger Zone -->
+        <section class="settings-section danger-zone">
+            <h2>Danger Zone</h2>
+            <p>Permanently delete your account and all associated data.</p>
+            <form action="{{ url_for('settings.delete_account') }}" method="POST"
+                onsubmit="return confirm('This will permanently delete your account. Are you sure?');">
+                <div class="form-group">
+                    <label for="delete_password">Enter your password to confirm</label>
+                    <input type="password" name="password" id="delete_password" required>
+                </div>
+                <button type="submit" class="btn btn-danger">Delete Account</button>
+            </form>
+        </section>
+    </div>
+</div>
+{% endblock %}
