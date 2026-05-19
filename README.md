@@ -71,6 +71,8 @@ pip install -r requirements.txt
 Run the Flask application:
 
 python app.py
+
+
 📂 Project Structure
 EcoPredict/
 │
@@ -86,6 +88,8 @@ Integrate real-world financial APIs
 Support multi-sector ESG forecasting
 Add model explainability using SHAP/LIME
 Docker and CI/CD deployment pipeline
+
+
 👨‍💻 Author
 
 Krishna Koundinya Veeravelly
